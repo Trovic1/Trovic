@@ -1,0 +1,12 @@
+{
+  "name": "ifiefruitty",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export:brand": "node scripts/export-brand-png.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.33.2"
+  }
+}
