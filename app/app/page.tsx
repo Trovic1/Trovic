@@ -1,5 +1,8 @@
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import { getLatestGoal } from "@/lib/fallbackStore";
+
+const defaultHighlights = [
 
 const highlights = [
   {
@@ -26,11 +29,37 @@ const tasks = [
 ];
 
 export default function DashboardPage() {
+  const latestGoal = getLatestGoal();
+  const plan = latestGoal?.plan;
+  const highlights = latestGoal
+    ? [
+        {
+          label: "Active goal",
+          value: latestGoal.intake.goal,
+          detail: latestGoal.intake.successMetric
+        },
+        {
+          label: "Next check-in",
+          value: "Tonight",
+          detail: "Accountability agent"
+        },
+        {
+          label: "Weekly focus",
+          value: plan?.focus ?? "Planner agent",
+          detail: plan?.weeklyMilestones?.[0] ?? "Weekly milestones in progress"
+        }
+      ]
+    : defaultHighlights;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-6xl space-y-10 px-6 py-12">
         <PageHeader
           eyebrow="Dashboard"
+          title={latestGoal ? "Welcome back" : "Welcome back, Victory"}
+          description="Your AI agents are tracking momentum, celebrating wins, and adjusting your plan in real time."
+          ctaLabel={latestGoal ? "View goal" : "Start check-in"}
+          ctaHref={latestGoal ? `/app/goal/${latestGoal.intake.goalId}` : "/app/goal/commit-30"}
           title="Welcome back, Victory"
           description="Your AI agents are tracking momentum, celebrating wins, and adjusting your plan in real time."
           ctaLabel="Start check-in"
@@ -53,6 +82,9 @@ export default function DashboardPage() {
           <div className="card space-y-4">
             <h2 className="text-xl font-semibold text-commit-slate">Today’s momentum</h2>
             <p className="text-slate-600">
+              {latestGoal
+                ? "Your planner agent is ready to adjust tasks if your schedule shifts."
+                : "The accountability agent noticed you skipped Tuesday. Want to reschedule a shorter session this evening?"}
               The accountability agent noticed you skipped Tuesday. Want to reschedule a shorter
               session this evening?
             </p>
@@ -72,6 +104,7 @@ export default function DashboardPage() {
           <div className="card space-y-4">
             <h3 className="text-lg font-semibold text-commit-slate">Tasks to close today</h3>
             <ul className="space-y-3 text-sm text-slate-600">
+              {(plan?.dailyCommitments ?? tasks).map((task) => (
               {tasks.map((task) => (
                 <li key={task} className="flex items-start gap-3">
                   <span className="mt-1 h-2 w-2 rounded-full bg-commit-amber" />

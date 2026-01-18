@@ -1,4 +1,6 @@
 import PageHeader from "@/components/PageHeader";
+import ReflectionPanel from "@/components/ReflectionPanel";
+import { getLatestGoal } from "@/lib/fallbackStore";
 
 const metrics = [
   { label: "Check-ins", value: "9 / 10" },
@@ -13,6 +15,9 @@ const reflections = [
 ];
 
 export default function ReviewPage() {
+  const latestGoal = getLatestGoal();
+  const goalId = latestGoal?.intake.goalId ?? "commit-30";
+
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-6xl space-y-10 px-6 py-12">
@@ -35,6 +40,20 @@ export default function ReviewPage() {
           ))}
         </section>
 
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="card space-y-4">
+            <h2 className="text-xl font-semibold text-commit-slate">What the agent noticed</h2>
+            <ul className="space-y-3 text-slate-600">
+              {reflections.map((item) => (
+                <li key={item} className="flex gap-3">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-commit-amber" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <ReflectionPanel goalId={goalId} />
         <section className="card space-y-4">
           <h2 className="text-xl font-semibold text-commit-slate">What the agent noticed</h2>
           <ul className="space-y-3 text-slate-600">

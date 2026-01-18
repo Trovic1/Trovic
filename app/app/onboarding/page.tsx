@@ -1,3 +1,5 @@
+import PageHeader from "@/components/PageHeader";
+import OnboardingForm from "@/components/OnboardingForm";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 
@@ -37,6 +39,7 @@ export default function OnboardingPage() {
             ))}
           </div>
 
+          <OnboardingForm />
           <div className="card space-y-4">
             <h3 className="text-lg font-semibold text-commit-slate">Resolution intake</h3>
             <p className="text-sm text-slate-600">
