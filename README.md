@@ -5,6 +5,7 @@ Commit Coach is a hackathon-ready Next.js project that turns resolutions into we
 ## Stack
 - Next.js App Router + TypeScript + Tailwind
 - Opik for AI agent orchestration + tracing
+- Opik for AI agent orchestration
 - Supabase for auth + storage
 
 ## Getting started

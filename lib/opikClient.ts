@@ -40,3 +40,14 @@ export async function emitOpikTrace(name: string, payload: Record<string, unknow
   console.info("[opik:trace]", trace);
   return trace;
 }
+export const opikConfig = {
+  apiKey: process.env.OPIK_API_KEY ?? "",
+  projectId: process.env.OPIK_PROJECT_ID ?? "commit-coach"
+};
+
+export const opikAgents = {
+  intake: "intake-agent",
+  planner: "planner-agent",
+  accountability: "accountability-agent",
+  reflection: "reflection-agent"
+};

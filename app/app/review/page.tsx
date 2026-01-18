@@ -54,6 +54,16 @@ export default function ReviewPage() {
           </div>
 
           <ReflectionPanel goalId={goalId} />
+        <section className="card space-y-4">
+          <h2 className="text-xl font-semibold text-commit-slate">What the agent noticed</h2>
+          <ul className="space-y-3 text-slate-600">
+            {reflections.map((item) => (
+              <li key={item} className="flex gap-3">
+                <span className="mt-1 h-2 w-2 rounded-full bg-commit-amber" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </section>
       </div>
     </div>

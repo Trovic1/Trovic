@@ -3,6 +3,8 @@ import PageHeader from "@/components/PageHeader";
 import { getLatestGoal } from "@/lib/fallbackStore";
 
 const defaultHighlights = [
+
+const highlights = [
   {
     label: "Active goal",
     value: "30-day fitness sprint",
@@ -58,6 +60,10 @@ export default function DashboardPage() {
           description="Your AI agents are tracking momentum, celebrating wins, and adjusting your plan in real time."
           ctaLabel={latestGoal ? "View goal" : "Start check-in"}
           ctaHref={latestGoal ? `/app/goal/${latestGoal.intake.goalId}` : "/app/goal/commit-30"}
+          title="Welcome back, Victory"
+          description="Your AI agents are tracking momentum, celebrating wins, and adjusting your plan in real time."
+          ctaLabel="Start check-in"
+          ctaHref="/app/goal/commit-30"
         />
 
         <section className="grid gap-6 md:grid-cols-3">
@@ -79,6 +85,8 @@ export default function DashboardPage() {
               {latestGoal
                 ? "Your planner agent is ready to adjust tasks if your schedule shifts."
                 : "The accountability agent noticed you skipped Tuesday. Want to reschedule a shorter session this evening?"}
+              The accountability agent noticed you skipped Tuesday. Want to reschedule a shorter
+              session this evening?
             </p>
             <div className="rounded-2xl bg-commit-blue/5 p-4 text-sm text-commit-slate">
               Suggestion: 20-minute mobility session + 10-minute reflection.
@@ -97,6 +105,7 @@ export default function DashboardPage() {
             <h3 className="text-lg font-semibold text-commit-slate">Tasks to close today</h3>
             <ul className="space-y-3 text-sm text-slate-600">
               {(plan?.dailyCommitments ?? tasks).map((task) => (
+              {tasks.map((task) => (
                 <li key={task} className="flex items-start gap-3">
                   <span className="mt-1 h-2 w-2 rounded-full bg-commit-amber" />
                   <span>{task}</span>

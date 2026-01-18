@@ -1,5 +1,7 @@
 import PageHeader from "@/components/PageHeader";
 import OnboardingForm from "@/components/OnboardingForm";
+import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
 
 const steps = [
   {
@@ -38,6 +40,23 @@ export default function OnboardingPage() {
           </div>
 
           <OnboardingForm />
+          <div className="card space-y-4">
+            <h3 className="text-lg font-semibold text-commit-slate">Resolution intake</h3>
+            <p className="text-sm text-slate-600">
+              Example: “Build a consistent workout habit to feel stronger by March.”
+            </p>
+            <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+              Opik prompt preview
+              <br />
+              “What does success look like in 4 weeks?”
+            </div>
+            <Link
+              href="/app/goal/commit-30"
+              className="rounded-full bg-commit-blue px-4 py-2 text-center text-sm font-semibold text-white"
+            >
+              Continue to goal
+            </Link>
+          </div>
         </div>
       </div>
     </div>
