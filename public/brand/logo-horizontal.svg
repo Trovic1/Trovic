@@ -1,0 +1,30 @@
+<svg width="1400" height="400" viewBox="0 0 1400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .ring { stroke: #F59E0B; }
+      .check { stroke: #1E40AF; }
+      .wordmark { fill: #1E293B; font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-weight: 700; }
+    </style>
+  </defs>
+  <g>
+    <circle
+      class="ring"
+      cx="200"
+      cy="200"
+      r="140"
+      stroke-width="32"
+      stroke-linecap="round"
+      stroke-dasharray="703.72 175.93"
+      stroke-dashoffset="-45"
+      transform="rotate(-40 200 200)"
+    />
+    <path
+      class="check"
+      d="M 155 205 L 195 245 L 265 150"
+      stroke-width="34"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+  <text class="wordmark" x="430" y="230" font-size="120">Commit Coach</text>
+</svg>
