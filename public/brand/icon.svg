@@ -1,0 +1,28 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .ring { stroke: #F59E0B; }
+      .check { stroke: #1E40AF; }
+    </style>
+  </defs>
+  <g>
+    <circle
+      class="ring"
+      cx="512"
+      cy="512"
+      r="360"
+      stroke-width="80"
+      stroke-linecap="round"
+      stroke-dasharray="1809.56 452.39"
+      stroke-dashoffset="-120"
+      transform="rotate(-40 512 512)"
+    />
+    <path
+      class="check"
+      d="M 402 540 L 492 630 L 672 420"
+      stroke-width="90"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>
