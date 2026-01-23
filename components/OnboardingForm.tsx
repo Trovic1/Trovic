@@ -19,12 +19,10 @@ export default function OnboardingForm() {
   const [constraints, setConstraints] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<IntakeResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
-    setError(null);
 
     const intakePayload = {
       resolution,
@@ -36,42 +34,29 @@ export default function OnboardingForm() {
         .filter(Boolean)
     };
 
-    try {
-      const intakeRes = await fetch("/api/agents/intake", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(intakePayload)
-      });
+    const intakeRes = await fetch("/api/agents/intake", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(intakePayload)
+    });
 
-      if (!intakeRes.ok) {
-        throw new Error("Intake failed. Please check your inputs and try again.");
-      }
+    const intakeData = (await intakeRes.json()) as IntakeResponse;
+    setResult(intakeData);
 
-      const intakeData = (await intakeRes.json()) as IntakeResponse;
-      setResult(intakeData);
+    await fetch("/api/agents/planner", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        goalId: intakeData.goalId,
+        goal: intakeData.goal,
+        timeframeWeeks: Number(timeframeWeeks),
+        successMetric: intakeData.successMetric,
+        constraints: intakePayload.constraints
+      })
+    });
 
-      const plannerRes = await fetch("/api/agents/planner", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          goalId: intakeData.goalId,
-          goal: intakeData.goal,
-          timeframeWeeks: Number(timeframeWeeks),
-          successMetric: intakeData.successMetric,
-          constraints: intakePayload.constraints
-        })
-      });
-
-      if (!plannerRes.ok) {
-        throw new Error("Planner failed. Please try again.");
-      }
-
-      router.push(`/app/goal/${intakeData.goalId}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+    router.push("/app");
   };
 
   return (
@@ -124,15 +109,9 @@ export default function OnboardingForm() {
           disabled={loading}
           className="w-full rounded-full bg-commit-blue px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-commit-slate disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {loading ? "Planning your commitments…" : "Generate plan"}
+          {loading ? "Creating your plan..." : "Generate plan"}
         </button>
       </form>
-
-      {error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
-        </div>
-      ) : null}
 
       {result ? (
         <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-600">
