@@ -2,12 +2,20 @@
 
 import { useMemo, useState } from "react";
 
-import type { PlannerOutput } from "@/lib/schemas";
-import type { GoalRecord } from "@/lib/store";
-
 interface GoalDetailClientProps {
   goalId: string;
-  initialRecord: GoalRecord;
+  goal: string;
+  successMetric: string;
+  weeklyCadence: string;
+  initialMilestone: string;
+  timeframeWeeks: number;
+  motivation: string;
+  constraints: string[];
+  plan: {
+    focus: string;
+    weeklyMilestones: string[];
+    dailyCommitments: string[];
+  };
 }
 
 interface AccountabilityResponse {
@@ -24,16 +32,21 @@ interface ReflectionResponse {
 
 export default function GoalDetailClient({
   goalId,
-  initialRecord
+  goal,
+  successMetric,
+  weeklyCadence,
+  initialMilestone,
+  timeframeWeeks,
+  motivation,
+  constraints,
+  plan
 }: GoalDetailClientProps) {
-  const { intake, plan, timeframeWeeks, motivation, constraints } = initialRecord;
-  const { goal, successMetric, weeklyCadence, initialMilestone } = intake;
   const [isEditing, setIsEditing] = useState(false);
   const [formWeeks, setFormWeeks] = useState(timeframeWeeks);
   const [formMotivation, setFormMotivation] = useState(motivation);
   const [formConstraints, setFormConstraints] = useState(constraints.join(", "));
   const [editMessage, setEditMessage] = useState<string | null>(null);
-  const [planState, setPlanState] = useState<PlannerOutput>(plan);
+  const [planState, setPlanState] = useState(plan);
   const [planMessage, setPlanMessage] = useState<string | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
@@ -107,7 +120,7 @@ export default function GoalDetailClient({
       return;
     }
 
-    const data = (await response.json()) as PlannerOutput;
+    const data = (await response.json()) as GoalDetailClientProps["plan"];
     setPlanState(data);
     setPlanMessage("Plan refreshed successfully.");
     setPlanLoading(false);

@@ -57,13 +57,6 @@ export const reflectionOutputSchema = z.object({
   adjustments: z.array(z.string()).min(1)
 });
 
-export const goalUpdateSchema = z.object({
-  goalId: z.string(),
-  timeframeWeeks: z.number().int().min(1).max(52),
-  motivation: z.string().min(3),
-  constraints: z.array(z.string())
-});
-
 export type IntakeInput = z.infer<typeof intakeInputSchema>;
 export type IntakeOutput = z.infer<typeof intakeOutputSchema>;
 export type PlannerInput = z.infer<typeof plannerInputSchema>;
@@ -72,4 +65,3 @@ export type AccountabilityInput = z.infer<typeof accountabilityInputSchema>;
 export type AccountabilityOutput = z.infer<typeof accountabilityOutputSchema>;
 export type ReflectionInput = z.infer<typeof reflectionInputSchema>;
 export type ReflectionOutput = z.infer<typeof reflectionOutputSchema>;
-export type GoalUpdateInput = z.infer<typeof goalUpdateSchema>;

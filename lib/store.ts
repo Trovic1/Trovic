@@ -5,14 +5,11 @@ import type {
   ReflectionOutput
 } from "@/lib/schemas";
 
-export interface GoalRecord {
+interface GoalRecord {
   intake: IntakeOutput;
   plan: PlannerOutput | null;
   checkIns: AccountabilityOutput[];
   reflections: ReflectionOutput[];
-  timeframeWeeks: number;
-  motivation: string;
-  constraints: string[];
 }
 
 const goalStore = new Map<string, GoalRecord>();
@@ -48,21 +45,6 @@ export function addReflection(goalId: string, reflection: ReflectionOutput) {
   }
   record.reflections.unshift(reflection);
   latestGoalId = goalId;
-}
-
-export function updateGoalDetails(
-  goalId: string,
-  details: Pick<GoalRecord, "timeframeWeeks" | "motivation" | "constraints">
-) {
-  const record = goalStore.get(goalId);
-  if (!record) {
-    return false;
-  }
-  record.timeframeWeeks = details.timeframeWeeks;
-  record.motivation = details.motivation;
-  record.constraints = details.constraints;
-  latestGoalId = goalId;
-  return true;
 }
 
 export function getLatestGoal() {

@@ -18,15 +18,7 @@ export async function POST(request: Request) {
     initialMilestone: "Block your first two sessions on the calendar"
   });
 
-  saveGoal(result.goalId, {
-    intake: result,
-    plan: null,
-    checkIns: [],
-    reflections: [],
-    timeframeWeeks: parsed.data.timeframeWeeks,
-    motivation: parsed.data.motivation,
-    constraints: parsed.data.constraints
-  });
+  saveGoal(result.goalId, { intake: result, plan: null, checkIns: [], reflections: [] });
 
   return NextResponse.json(result);
 }
