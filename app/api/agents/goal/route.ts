@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { goalUpdateSchema } from "@/lib/schemas";
+import { intakeInputSchema } from "@/lib/schemas";
 import { updateGoalDetails } from "@/lib/store";
 
 export async function PATCH(request: Request) {
