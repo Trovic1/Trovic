@@ -16,7 +16,8 @@
     "opik": "^0.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sharp": "^0.33.2"
+    "sharp": "^0.33.2",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

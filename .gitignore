@@ -1,0 +1,6 @@
+﻿node_modules/
+.next/
+.env.local
+.env
+demo.ps1
+package-lock.json
