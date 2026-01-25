@@ -57,3 +57,16 @@ export function getLatestGoal() {
 export function getGoal(goalId: string) {
   return goalStore.get(goalId) ?? null;
 }
+export function updateGoalDetails(
+  goalId: string,
+  updates: Partial<Pick<GoalRecord["intake"], "timeframeWeeks" | "motivation" | "constraints">>
+) {
+  const record = goalStore.get(goalId);
+  if (!record) return;
+
+  record.intake = {
+    ...record.intake,
+    ...updates
+  };
+  latestGoalId = goalId;
+}
