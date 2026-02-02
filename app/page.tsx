@@ -1,165 +1,328 @@
-import Image from "next/image";
-import Link from "next/link";
-import FeatureCard from "@/components/FeatureCard";
-import NavBar from "@/components/NavBar";
+"use client";
 
-const features = [
-  {
-    title: "Goal clarity",
-    description:
-      "Turn resolutions into measurable outcomes with an intake agent that asks the right questions."
-  },
-  {
-    title: "Momentum plans",
-    description:
-      "Weekly sprints and daily micro-commitments keep your progress tangible and achievable."
-  },
-  {
-    title: "Accountability loops",
-    description:
-      "Opik agents check in, unblock you, and summarize wins so you never lose the thread."
-  }
-];
+import { useEffect, useMemo, useState } from "react";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 
-const workflow = [
-  "Define your resolution and timeframe.",
-  "Generate a SMART goal and weekly plan.",
-  "Check in daily, reflect weekly, and adjust fast."
-];
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type ActionPayload =
+  | {
+      type: "getCryptoPrice";
+      symbol: string;
+      priceUsd: number;
+    }
+  | {
+      type: "listOnchainAlerts";
+      owner: string;
+      alerts: Array<{
+        owner: string;
+        symbol: string;
+        targetPriceUsd: string;
+        isAbove: boolean;
+        createdAt: string;
+        active: boolean;
+      }>;
+    }
+  | {
+      type: "createOnchainAlert";
+      symbol: string;
+      targetPriceUsd: number;
+      isAbove: boolean;
+      txHash: string;
+    };
+
+type AlertItem = {
+  owner: string;
+  symbol: string;
+  targetPriceUsd: string;
+  isAbove: boolean;
+  createdAt: string;
+  active: boolean;
+};
 
 export default function HomePage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-white">
-      <NavBar />
-      <main>
-        <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 py-16 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-6">
-            <p className="text-sm font-semibold uppercase tracking-widest text-commit-amber">
-              Hackathon Project
-            </p>
-            <h1 className="text-4xl font-semibold text-commit-slate md:text-5xl">
-              Commit Coach helps you turn resolutions into weekly wins.
-            </h1>
-            <p className="text-lg text-slate-600">
-              Powered by Opik agents and Supabase, Commit Coach keeps your goals visible,
-              actionable, and supported with daily accountability.
-            </p>
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href="/app/onboarding"
-                className="rounded-full bg-commit-blue px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-commit-slate"
-              >
-                Start onboarding
-              </Link>
-              <Link
-                href="/app"
-                className="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-commit-slate shadow-sm transition hover:-translate-y-0.5 hover:border-commit-blue"
-              >
-                View dashboard
-              </Link>
-            </div>
-          </div>
-          <div className="relative rounded-3xl border border-slate-200 bg-white p-10 shadow-sm">
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <Image src="/brand/icon.svg" alt="Commit Coach icon" width={64} height={64} />
-                <div>
-                  <p className="text-sm font-semibold text-commit-amber">Progress ring</p>
-                  <p className="text-lg font-semibold text-commit-slate">Accountability snapshot</p>
-                </div>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-6">
-                <p className="text-sm font-semibold text-commit-slate">Today</p>
-                <p className="mt-2 text-2xl font-semibold text-commit-amber">2 of 3 tasks done</p>
-                <p className="mt-2 text-sm text-slate-500">
-                  Opik agents have scheduled your next check-in for 7:00 PM.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-dashed border-commit-blue/40 p-6">
-                <p className="text-sm font-semibold text-commit-blue">Next action</p>
-                <p className="mt-2 text-base text-slate-600">
-                  Send reflection prompt after the evening workout.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      role: "assistant",
+      content:
+        "Welcome to Crypto Radar AI Agent. Ask me for prices, create alerts, or list alerts."
+    }
+  ]);
+  const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [actions, setActions] = useState<ActionPayload[]>([]);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [alertsLoading, setAlertsLoading] = useState(false);
+  const [alertsError, setAlertsError] = useState<string | null>(null);
 
-        <section id="features" className="mx-auto max-w-6xl px-6 py-16">
-          <div className="mb-10 flex items-center justify-between">
-            <h2 className="section-title">Designed for consistency</h2>
-            <p className="text-sm text-slate-500">AI agents + human commitment</p>
+  const { address, isConnected } = useAccount();
+  const { connectors, connect, isPending } = useConnect();
+  const { disconnect } = useDisconnect();
+
+  const primaryConnector = connectors[0];
+  const chainName =
+    process.env.NEXT_PUBLIC_CHAIN_NAME ?? "Avalanche Fuji";
+
+  const formattedActions = useMemo(
+    () =>
+      actions.map((action, index) => ({
+        id: `${action.type}-${index}`,
+        detail: action
+      })),
+    [actions]
+  );
+
+  const fetchAlerts = async () => {
+    if (!address) {
+      return;
+    }
+    setAlertsLoading(true);
+    setAlertsError(null);
+    try {
+      const response = await fetch(`/api/alerts?owner=${address}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Failed to load alerts.");
+      }
+      setAlerts(data.alerts ?? []);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error.";
+      setAlertsError(message);
+    } finally {
+      setAlertsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (address) {
+      fetchAlerts();
+    } else {
+      setAlerts([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
+
+  const sendMessage = async (message: string) => {
+    if (!message.trim()) {
+      return;
+    }
+    setIsSending(true);
+    setMessages((prev) => [...prev, { role: "user", content: message }]);
+    setInput("");
+    try {
+      const response = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.reply ?? "Agent request failed.");
+      }
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.reply }
+      ]);
+      if (Array.isArray(data.actions)) {
+        setActions(data.actions);
+      }
+    } catch (error) {
+      const messageText =
+        error instanceof Error ? error.message : "Unknown error.";
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Agent error: ${messageText}` }
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    void sendMessage(input);
+  };
+
+  const handleQuickAction = (action: string) => {
+    void sendMessage(action);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <header className="border-b border-white/10 px-6 py-5">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">
+              Crypto Radar AI Agent
+            </p>
+            <h1 className="text-2xl font-semibold">Avalanche Alert Command Center</h1>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {features.map((feature) => (
-              <FeatureCard key={feature.title} {...feature} />
+          <div className="flex items-center gap-3">
+            {isConnected ? (
+              <>
+                <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-200">
+                  Connected: {address?.slice(0, 6)}...{address?.slice(-4)}
+                </span>
+                <button
+                  onClick={() => disconnect()}
+                  className="rounded-full border border-white/20 px-4 py-2 text-sm text-white hover:border-emerald-300 hover:text-emerald-200"
+                >
+                  Disconnect
+                </button>
+              </>
+            ) : (
+              <button
+                disabled={!primaryConnector || isPending}
+                onClick={() => connect({ connector: primaryConnector })}
+                className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-slate-700"
+              >
+                {isPending ? "Connecting..." : "Connect Wallet"}
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto grid max-w-6xl gap-6 px-6 py-10 lg:grid-cols-[1fr_320px]">
+        <section className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-xl">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-slate-400">Chain</p>
+              <p className="text-lg font-semibold text-white">{chainName}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => handleQuickAction("Price of AVAX")}
+                className="rounded-full border border-emerald-400/40 px-4 py-2 text-xs text-emerald-200 hover:border-emerald-300"
+              >
+                Price of AVAX
+              </button>
+              <button
+                onClick={() => handleQuickAction("Create alert for AVAX above 50")}
+                className="rounded-full border border-emerald-400/40 px-4 py-2 text-xs text-emerald-200 hover:border-emerald-300"
+              >
+                Create sample alert
+              </button>
+              <button
+                onClick={fetchAlerts}
+                className="rounded-full border border-white/20 px-4 py-2 text-xs text-white hover:border-emerald-300"
+              >
+                Refresh alerts
+              </button>
+              {isConnected && address ? (
+                <button
+                  onClick={() =>
+                    handleQuickAction(`Show my alerts ${address}`)
+                  }
+                  className="rounded-full border border-white/20 px-4 py-2 text-xs text-white hover:border-emerald-300"
+                >
+                  Ask agent for my alerts
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {messages.map((message, index) => (
+              <div
+                key={`${message.role}-${index}`}
+                className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  message.role === "assistant"
+                    ? "bg-slate-800/80 text-slate-100"
+                    : "bg-emerald-400/20 text-emerald-50"
+                }`}
+              >
+                <p className="text-xs uppercase tracking-wide text-slate-400">
+                  {message.role === "assistant" ? "Agent" : "You"}
+                </p>
+                <p className="mt-2 whitespace-pre-wrap">{message.content}</p>
+              </div>
             ))}
           </div>
-        </section>
 
-        <section id="workflow" className="mx-auto max-w-6xl px-6 py-16">
-          <div className="grid gap-10 rounded-3xl border border-slate-200 bg-white px-8 py-10 shadow-sm lg:grid-cols-[1.2fr_0.8fr]">
-            <div>
-              <h2 className="section-title">Your weekly commit loop</h2>
-              <p className="mt-3 text-slate-600">
-                Each goal becomes a sprint that the agents can measure, nudge, and optimize.
+          {formattedActions.length > 0 ? (
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+              <p className="text-xs uppercase tracking-widest text-emerald-300">
+                Latest tool actions
               </p>
-              <ul className="mt-6 space-y-4 text-slate-600">
-                {workflow.map((item) => (
-                  <li key={item} className="flex gap-3">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-commit-amber" />
-                    <span>{item}</span>
-                  </li>
+              <div className="mt-3 space-y-3 text-xs text-slate-200">
+                {formattedActions.map(({ id, detail }) => (
+                  <pre
+                    key={id}
+                    className="overflow-x-auto rounded-xl bg-slate-900 p-3 text-[0.72rem] text-slate-200"
+                  >
+                    {JSON.stringify(detail, null, 2)}
+                  </pre>
                 ))}
-              </ul>
-            </div>
-            <div className="rounded-2xl bg-gradient-to-br from-commit-blue to-commit-slate p-6 text-white">
-              <p className="text-sm font-semibold uppercase tracking-widest text-white/70">Agent focus</p>
-              <p className="mt-4 text-2xl font-semibold">Daily check-ins</p>
-              <p className="mt-3 text-sm text-white/80">
-                The accountability agent summarizes blockers, adjusts your schedule, and keeps the
-                streak alive.
-              </p>
-              <div className="mt-6 rounded-2xl bg-white/10 p-4">
-                <p className="text-sm">Next prompt</p>
-                <p className="text-lg font-semibold">"What is your smallest win today?"</p>
               </div>
             </div>
-          </div>
+          ) : null}
+
+          <form onSubmit={handleSubmit} className="mt-6 flex gap-3">
+            <input
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Ask the agent to fetch a price or create an alert..."
+              className="flex-1 rounded-full border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-emerald-300 focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={isSending}
+              className="rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-slate-700"
+            >
+              {isSending ? "Sending..." : "Send"}
+            </button>
+          </form>
         </section>
 
-        <section id="agents" className="mx-auto max-w-6xl px-6 py-16">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="card space-y-4">
-              <h3 className="text-xl font-semibold text-commit-slate">Opik agent stack</h3>
-              <p className="text-slate-600">
-                Configure Intake, Planner, Accountability, and Reflection agents with Opik to
-                orchestrate every touchpoint.
+        <aside className="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-slate-400">
+                My Alerts
               </p>
-              <Link className="text-sm font-semibold text-commit-blue" href="/app/onboarding">
-                Map your first workflow →
-              </Link>
+              <p className="text-lg font-semibold text-white">On-chain registry</p>
             </div>
-            <div className="card space-y-4">
-              <h3 className="text-xl font-semibold text-commit-slate">Supabase secure core</h3>
-              <p className="text-slate-600">
-                Store goals, tasks, check-ins, and reflections with built-in auth and row-level
-                security.
-              </p>
-              <Link className="text-sm font-semibold text-commit-blue" href="/app">
-                Explore the demo dashboard →
-              </Link>
-            </div>
+            <span className="rounded-full border border-emerald-400/30 px-3 py-1 text-xs text-emerald-200">
+              {isConnected ? "Connected" : "Wallet required"}
+            </span>
           </div>
-        </section>
+
+          <div className="mt-4 space-y-3 text-sm text-slate-300">
+            {!isConnected ? (
+              <p className="text-slate-400">
+                Connect a wallet to load your on-chain alert history.
+              </p>
+            ) : alertsLoading ? (
+              <p>Loading alerts...</p>
+            ) : alertsError ? (
+              <p className="text-rose-300">{alertsError}</p>
+            ) : alerts.length === 0 ? (
+              <p className="text-slate-400">
+                No alerts yet. Create one using the chat or the quick action.
+              </p>
+            ) : (
+              alerts.map((alert, index) => (
+                <div
+                  key={`${alert.symbol}-${index}`}
+                  className="rounded-2xl border border-white/10 bg-slate-950/70 p-4"
+                >
+                  <p className="text-sm font-semibold text-white">
+                    {alert.symbol} {alert.isAbove ? "above" : "below"} $
+                    {alert.targetPriceUsd}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Status: {alert.active ? "Active" : "Inactive"}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </aside>
       </main>
-
-      <footer className="border-t border-slate-200 px-6 py-10 text-sm text-slate-500">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
-          <p>© 2026 Commit Coach. Built for Comet Resolution v2.</p>
-          <p>Opik + Supabase + Next.js</p>
-        </div>
-      </footer>
     </div>
   );
 }

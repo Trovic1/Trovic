@@ -3,17 +3,9 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
-  @apply bg-white text-commit-ink antialiased;
-}
-
-.section-title {
-  @apply text-3xl font-semibold tracking-tight text-commit-slate;
-}
-
-.card {
-  @apply rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm;
+  @apply bg-slate-950 text-slate-100 antialiased;
 }
