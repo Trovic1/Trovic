@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {MockUSDC} from "./MockUSDC.sol";
+import { MockUSDC } from "./MockUSDC.sol";
 
 /// @title CashflowVault
 /// @notice Lightweight ERC-4626 style vault over MockUSDC for hackathon use.
@@ -139,7 +139,10 @@ contract CashflowVault {
     /// @param receiver Recipient of assets.
     /// @param owner Owner whose shares are burned.
     /// @return shares Shares burned.
-    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+    function withdraw(uint256 assets, address receiver, address owner)
+        external
+        returns (uint256 shares)
+    {
         require(assets > 0, "ZERO_ASSETS");
         shares = previewWithdraw(assets);
         _spendAllowanceIfNeeded(owner, msg.sender, shares);
@@ -153,7 +156,10 @@ contract CashflowVault {
     /// @param receiver Recipient of assets.
     /// @param owner Owner whose shares are burned.
     /// @return assets Assets returned.
-    function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+    function redeem(uint256 shares, address receiver, address owner)
+        external
+        returns (uint256 assets)
+    {
         require(shares > 0, "ZERO_SHARES");
         assets = convertToAssets(shares);
         _spendAllowanceIfNeeded(owner, msg.sender, shares);

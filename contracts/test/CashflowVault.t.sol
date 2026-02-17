@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import {MockUSDC} from "../src/MockUSDC.sol";
-import {CashflowVault} from "../src/CashflowVault.sol";
-import {CashflowSchedule} from "../src/CashflowSchedule.sol";
+import { MockUSDC } from "../src/MockUSDC.sol";
+import { CashflowVault } from "../src/CashflowVault.sol";
+import { CashflowSchedule } from "../src/CashflowSchedule.sol";
 
 contract CashflowVaultTest is Test {
     MockUSDC internal usdc;

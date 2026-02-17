@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {CashflowVault} from "./CashflowVault.sol";
+import { CashflowVault } from "./CashflowVault.sol";
 
 /// @title CashflowSchedule
 /// @notice Manages a simulated cashflow agreement where a creator periodically pays into a vault.
@@ -33,7 +33,13 @@ contract CashflowSchedule {
     /// @param cadence_ Minimum seconds between payments.
     /// @param paymentAmount_ Amount paid each successful `pay()` call.
     /// @param startTime_ Earliest timestamp when the first payment is allowed.
-    constructor(address creator_, address vault_, uint256 cadence_, uint256 paymentAmount_, uint256 startTime_) {
+    constructor(
+        address creator_,
+        address vault_,
+        uint256 cadence_,
+        uint256 paymentAmount_,
+        uint256 startTime_
+    ) {
         require(creator_ != address(0), "ZERO_CREATOR");
         require(vault_ != address(0), "ZERO_VAULT");
         require(cadence_ > 0, "ZERO_CADENCE");

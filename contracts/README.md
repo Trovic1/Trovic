@@ -1,4 +1,9 @@
 # CashflowVaults (Avalanche Hackathon MVP)
+## Local Demo (Run in 30s)
+cd contracts
+forge install OpenZeppelin/openzeppelin-contracts
+forge test -vvv
+forge script script/Demo.s.sol
 
 CashflowVaults simulates tokenized future cashflows using an ERC-4626-style vault:
 - investors deposit MockUSDC and receive vault shares,
