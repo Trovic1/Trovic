@@ -5,10 +5,7 @@ import { createConfig, http, WagmiProvider } from "wagmi";
 import { avalancheFuji } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
 import { useMemo } from "react";
-
-const defaultRpc =
-  process.env.NEXT_PUBLIC_RPC_URL ??
-  "https://api.avax-test.network/ext/bc/C/rpc";
+import { cashflowChainId, fujiRpcUrl } from "@/app/lib/cashflowContracts";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = useMemo(() => new QueryClient(), []);
@@ -18,7 +15,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         chains: [avalancheFuji],
         connectors: [injected()],
         transports: {
-          [avalancheFuji.id]: http(defaultRpc)
+          [cashflowChainId]: http(fujiRpcUrl)
         }
       }),
     []
@@ -26,9 +23,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
   );
 }
